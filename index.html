@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Song Identifier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .mic-animation {
+            animation: pulse 1.5s infinite;
+            pointer-events: none; /* Prevent blocking the button */
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+        .record-button {
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 10; /* Ensure it's clickable */
+        }
+        .record-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white/10 backdrop-blur-lg rounded-3xl p-8 max-w-md w-full shadow-2xl border border-white/20">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2">Song Identifier</h1>
+            <p class="text-purple-100/80">Record audio to identify the song</p>
+        </div>
+
+        <div class="flex flex-col items-center space-y-6">
+            <div class="relative">
+                <button id="recordButton" class="record-button bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white p-6 rounded-full shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-500/50 transition-all duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+                </button>
+                <div id="micAnimation" class="hidden absolute inset-0 bg-purple-500/30 rounded-full mic-animation"></div>
+            </div>
+
+            <div id="status" class="text-center">
+                <p id="statusText" class="text-white/90 font-medium">Ready to record</p>
+                <div id="timer" class="text-purple-100/70 mt-1 hidden">00:00</div>
+            </div>
+
+            <div id="result" class="w-full bg-white/5 rounded-xl p-4 border border-white/10 hidden">
+                <h3 class="text-white font-semibold mb-2">Detected Song:</h3>
+                <p id="songName" class="text-pink-200 text-lg"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let recording = false;
+        let startTime;
+        let timerInterval;
+
+        const recordButton = document.getElementById('recordButton');
+        const statusText = document.getElementById('statusText');
+        const timer = document.getElementById('timer');
+        const result = document.getElementById('result');
+        const songName = document.getElementById('songName');
+        const micAnimation = document.getElementById('micAnimation');
+
+        recordButton.addEventListener('click', async (e) => {
+            e.preventDefault();
+            console.log("Button clicked. Recording state:", recording);
+
+            if (!recording) {
+                await startRecording();
+            } else {
+                stopRecording();
+                console.log("Stop function called, recording should now be false");
+            }
+        });
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.addEventListener('dataavailable', event => {
+                    audioChunks.push(event.data);
+                });
+
+                mediaRecorder.addEventListener('stop', sendAudioToServer);
+
+                mediaRecorder.start();
+                recording = true;
+                startTime = new Date();
+
+                // Update UI
+                recordButton.classList.remove('from-pink-500', 'to-purple-600');
+                recordButton.classList.add('from-red-500', 'to-pink-600');
+                statusText.textContent = 'Recording...';
+                timer.classList.remove('hidden');
+                micAnimation.classList.remove('hidden');
+
+                // Start timer
+                updateTimer();
+                timerInterval = setInterval(updateTimer, 1000);
+
+                console.log("Recording started:", recording);
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                statusText.textContent = 'Error: Could not access microphone';
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && recording) {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                recording = false;
+                clearInterval(timerInterval);
+
+                // Update UI
+                recordButton.classList.remove('from-red-500', 'to-pink-600');
+                recordButton.classList.add('from-pink-500', 'to-purple-600');
+                statusText.textContent = 'Processing...';
+                micAnimation.classList.add('hidden');
+
+                console.log("Recording stopped:", recording);
+            }
+        }
+
+        function updateTimer() {
+            const now = new Date();
+            const diff = new Date(now - startTime);
+            const mins = diff.getUTCMinutes().toString().padStart(2, '0');
+            const secs = diff.getUTCSeconds().toString().padStart(2, '0');
+            timer.textContent = `${mins}:${secs}`;
+        }
+
+        async function sendAudioToServer() {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+
+            try {
+                const response = await fetch('http://localhost:3000/identify', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.song) {
+                    songName.textContent = data.song;
+                    result.classList.remove('hidden');
+                    statusText.textContent = 'Song identified!';
+                } else {
+                    statusText.textContent = 'Could not identify song';
+                }
+            } catch (error) {
+                console.error('Error sending audio:', error);
+                statusText.textContent = 'Error identifying song';
+            } finally {
+                setTimeout(() => {
+                    statusText.textContent = 'Ready to record';
+                    timer.classList.add('hidden');
+                    result.classList.add('hidden');
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
