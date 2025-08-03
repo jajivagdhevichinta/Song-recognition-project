@@ -1,62 +1,95 @@
-🎵 Song Recognition Project with MCP Server
+# 🎵 Song Recognition Project (Shazam-like Local MCP Server)
 
-A local music recognition system using Node.js, Python (Librosa), and MCP Server.
-It records audio from the browser, extracts MFCC features, and matches them against a locally generated database — fully offline, no third-party APIs.
+This project is a **local Shazam-like song recognition system** that identifies songs without using any external APIs.  
+It uses:
 
-📌 Features
+- **MediaRecorder API** to record audio from the browser.
+- **Node.js MCP Server** to process and identify songs.
+- **Python (Librosa + NumPy)** to extract MFCC fingerprints.
+- **FFmpeg** for audio format compatibility.
 
-    🎤 Record live audio directly from the browser.
-    
-    🎵 Recognize songs using local MCP server without cloud APIs.
-    
-    🐍 Python + Librosa for audio fingerprinting.
-    
-    ⚡ Node.js + Express backend using MCP Server for local model execution.
-    
-    🖥️ Offline functionality — no internet required after setup.
+---
 
-Song-Recognition-Project/
+## **Features**
+- 🎤 Record short audio clips from the browser.
+- 🧠 Generate MFCC fingerprints using Python.
+- 🔎 Compare recordings with a local songs database.
+- 📡 Fully **offline** using **MCP Server**.
+- ❌ **No external APIs required**.
 
-    ├── index.html           #Frontend UI for recording & showing results
-    
-    ├── index.js             # Node.js backend server with MCP server integration
-    
-    ├── fingerprint.py       # Python script to extract MFCC features
-    
-    ├── generate_db.py       # Script to generate songs.json database
-    
-    ├── songs/                # Folder with your reference songs
-    
-    ├── uploads/              # Temporary folder for recorded audio
-    
-    └── songs.json           # Auto-generated song fingerprints
- Access the App
- 1. Open index.html in your browser.
- 2. Click Record → play or sing a song snippet → get the recognized song name.
+---
 
-How It Works
+## 📂 Project Structure
 
-    1.Browser (Frontend)
-        - Captures audio using MediaRecorder API.
+Song-recognition-project/
+
+    │── fingerprint.py    # Extracts MFCC fingerprints (Qwencoder-assisted)
     
-    2.MCP Server + Node.js (Backend)
-        - Receives audio → saves temporarily → calls fingerprint.py.
+    │── generate_db.py     # Generates songs.json database locally
     
-    3.Python + Librosa
-        -Extracts MFCC features from the audio.
+    │── index.html         # Frontend UI with MediaRecorder
     
-    4.Node.js with MCP Server
-        -Compares features with songs.json using Cosine Similarity.
+    │── index.js           # Node.js server (MCP server for recognition)
     
-    5.Result
-        -Best match displayed in the UI.
+    │── songs/             # Your local song library
+    
+    │── uploads/           # Temporary audio recordings
+    
+    │── songs.json         # Auto-generated database of song fingerprints
+    
+    │── screenshots/       # Proof of execution screenshots
 
-Notes
+## **Workflow**
+1. **Frontend** (index.html)
+   - User records audio using **MediaRecorder API**.
+2. **MCP Server (index.js)**
+   - Receives uploaded audio.
+   - Calls **fingerprint.py** to extract MFCC features.
+   - Compares features with **songs.json**.
+3. **Output**
+   - Returns the best match (e.g., *"Baby"* or *"Believer"*).
 
-1.🎵 Fully offline — no cloud API calls.
+**Sample Logs:**
 
-2.🎯 Accuracy depends on:
+    Server running at http://localhost:3000
+    
+    --- New Identification Request ---
+    Similarity with "Baby": 0.9423
+    Similarity with "Believer": 0.8236
+    Best match: Baby, Similarity: 0.9423
 
-        - Clear recordings
-        -Song diversity in the database
-        -Recording length (10-30s works best)
+**1.Install Dependencies**
+
+Node.js (Backend MCP Server)
+
+    npm install express multer cors
+Python Requirements
+
+    pip install -r requirements.txt
+
+Install FFmpeg
+
+* Download from Gyan.dev.
+
+* Extract and add bin folder to PATH (e.g., C:\ffmpeg\bin).
+
+**2.Generate Song Database**
+
+Place your .mp3 songs in the songs/ folder.
+
+    python generate_db.py
+This creates songs.json with fingerprints
+
+**3.Start MCP Server**
+
+    node index.js
+Server runs at:
+
+    http://localhost:3000
+
+**5. Run Frontend**
+* Open index.html in your browser.
+
+* Click Record, hum or play a song.
+
+* Server returns the best match.
