@@ -93,3 +93,14 @@ Server runs at:
 * Click Record, hum or play a song.
 
 * Server returns the best match.
+
+## 📸 Proof of Execution
+
+Here’s an example of successful song detection:
+
+### Recording Interface
+![Recording Screenshot](screenshots/Screenshot 2025-08-03 090209.png)
+
+### Song Detected
+![Detected Screenshot](screenshots/Screenshot 2025-08-03 090209.png)
+
