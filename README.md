@@ -104,3 +104,10 @@ Here’s an example of successful song detection:
 ### Song Detected
 ![Detected Screenshot](screenshots/detected.png)
 
+## Acknowledgements
+
+* Qwencoder AI Agent – Assisted in writing and structuring the Python and Node.js code for local audio fingerprinting and MCP server integration.
+
+* MCP Server – Used for handling local audio recognition workflow.
+
+* Librosa, NumPy, FFmpeg – Used for extracting MFCC features and processing audio
