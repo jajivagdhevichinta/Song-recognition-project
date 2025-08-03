@@ -3,7 +3,6 @@
 This project is a **local Shazam-like song recognition system** that identifies songs without using any external APIs.  
 It uses:
 
-- **MediaRecorder API** to record audio from the browser.
 - **Node.js MCP Server** to process and identify songs.
 - **Python (Librosa + NumPy)** to extract MFCC fingerprints.
 - **FFmpeg** for audio format compatibility.
