@@ -99,8 +99,8 @@ Server runs at:
 Here’s an example of successful song detection:
 
 ### Recording Interface
-![Recording Screenshot](screenshots/Screenshot 2025-08-03 090209.png)
+![Recording Screenshot](screenshots/recording.png)
 
 ### Song Detected
-![Detected Screenshot](screenshots/Screenshot 2025-08-03 090209.png)
+![Detected Screenshot](screenshots/detected.png)
 
