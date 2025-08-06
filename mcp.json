@@ -1,0 +1,10 @@
+{
+  "name": "Song Recognition MCP Server",
+  "version": "1.0.0",
+  "description": "A local MCP server for audio recognition using MFCC fingerprinting and cosine similarity.",
+  "contact_email": "youremail@example.com",
+  "capabilities": {
+    "tools": ["audio.identify"],
+    "resources": []
+  },
+  "entrypoint": "node index.js"
